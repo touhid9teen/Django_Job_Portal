@@ -27,7 +27,7 @@ class Users(AbstractUser):
         ('employer', 'Employer'),
         ('admin', 'Admin'),
     )
-
+    username = models.CharField()
     email = models.EmailField(unique=True)
     contract_number = models.CharField(max_length=50)
     user_type = models.CharField(max_length=10, choices=USER_TYPES)
