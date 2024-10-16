@@ -53,10 +53,13 @@ class ValidedOtpView(APIView):
 class LoginView(APIView):
     authentication_classes = []
     def post(self, request):
-        email = request.data.get('email')
+        identifier = request.data.get('identifier')
         password = request.data.get('password')
         try:
-            user = Users.objects.get(email=email)
+            if '@' in identifier:
+                user = Users.objects.get(emai=identifier)
+            else:
+                user = Users.objects.get(contract_number=identifier)
             if not user.check_password(password):
                 return Response({'status': 'Wrong Password'}, status=status.HTTP_400_BAD_REQUEST)
 
