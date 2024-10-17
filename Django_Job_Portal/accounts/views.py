@@ -1,15 +1,13 @@
 
-from datetime import timedelta
-from django.utils import timezone
 from .models import Users
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.serializers import UserSerializer
 from .utils import generate_otp, send_welcome_email
-from job_portal.settings import SECRET_KEY
-import jwt
 from .authenticate import CustomAuthentication
+from .utils import token_generation
+from .auth_backends import EmailOrPhoneBackend
 
 
 class RegisterView(APIView):
@@ -40,6 +38,8 @@ class ValidedOtpView(APIView):
 
             if user.otp != otp:
                 return Response({'status': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+            if user.email != email:
+                return Response({'status': 'Invalid Email'}, status=status.HTTP_400_BAD_REQUEST)
 
             user.is_verified = True
             user.otp = None
@@ -53,38 +53,21 @@ class ValidedOtpView(APIView):
 class LoginView(APIView):
     authentication_classes = []
     def post(self, request):
-        identifier = request.data.get('identifier')
+        identifier = request.data.get('email_or_phone')
         password = request.data.get('password')
         try:
-            if '@' in identifier:
-                user = Users.objects.get(emai=identifier)
-            else:
-                user = Users.objects.get(contract_number=identifier)
-            if not user.check_password(password):
-                return Response({'status': 'Wrong Password'}, status=status.HTTP_400_BAD_REQUEST)
-
-            token = self.token_generation(user)
-            return Response({'access token': str(token)}, status=status.HTTP_200_OK)
-
-        except Users.DoesNotExist:
-            return Response({'status': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+            user = EmailOrPhoneBackend.authenticate(request, username=identifier, password=password)
+            try:
+                if user is not None:
+                    token = token_generation(user)
+                    return Response({'access token': str(token)}, status=status.HTTP_200_OK)
+            except Users.DoesNotExist:
+                return Response({'status': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-    def token_generation(self, user):
 
-        uptime = timezone.now() + timedelta(minutes=30)
-        payload = {
-            'id': user.id,
-            'email': user.email,
-            'user_type': user.user_type,
-            'contact_number': user.contract_number,
-            'exp': uptime,
-        }
-
-        encoded_token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
-        return encoded_token
 
 
 class UserInfoView(APIView):
