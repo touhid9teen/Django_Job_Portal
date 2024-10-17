@@ -21,8 +21,10 @@ def send_welcome_email(otp, email):
     except Exception as e:
         print(f"Failed to send email: {str(e)}")
 
-def token_generation(self, user):
+
+def token_generation(user):
     uptime = timezone.now() + timedelta(minutes=30)
+    print("token user", user, user.id, user.contract_number)
     payload = {
         'id': user.id,
         'email': user.email,

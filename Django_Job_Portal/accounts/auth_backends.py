@@ -11,16 +11,10 @@ class EmailOrPhoneBackend(ModelBackend):
                 return None
         else:
             try:
-                user = Users.objects.get(phone_number=username)
+                user = Users.objects.get(contract_number=username)
             except Users.DoesNotExist:
                 return None
 
         if user.check_password(password):
             return user
         return None
-
-    # def get_user(self, user_id):
-    #     try:
-    #         return Users.objects.get(id=user_id)
-    #     except Users.DoesNotExist:
-    #         return None
