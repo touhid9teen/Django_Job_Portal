@@ -6,9 +6,13 @@ from datetime import timedelta
 from django.utils import timezone
 from job_portal.settings import SECRET_KEY
 import jwt
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 def generate_otp():
-    return ''.join(random.choice(string.digits) for _ in range(6))
+    otp_length  = int(os.getenv('OTP_LENGTH'))
+    return ''.join(random.choice(string.digits) for _ in range(otp_length))
 
 
 def send_welcome_email(otp, email):

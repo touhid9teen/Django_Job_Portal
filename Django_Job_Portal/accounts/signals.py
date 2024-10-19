@@ -17,6 +17,6 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Users)
 def save_user_profile(sender, instance, **kwargs):
     if instance.user_type == 'candidate':
-        instance.CandidateProfile.save()
+        instance.candidateprofile.save()
     elif instance.user_type == 'employer':
-        instance.EmployerProfile.save()
+        instance.employerprofile.save()

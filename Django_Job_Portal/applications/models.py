@@ -11,7 +11,7 @@ class Application(models.Model):
     cover_letter = models.TextField(blank=True, null=True)
 
     # Resume and Attachments
-    resume = models.FileField(upload_to='resumes/')
+    resume = models.FileField(upload_to='documents/resumes/')
     portfolio_link = models.URLField(blank=True, null=True)
 
     # Status of Application

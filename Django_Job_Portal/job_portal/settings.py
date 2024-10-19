@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'accounts',
     'candidates',
-    'employers'
+    'employers',
+    'jobs'
 ]
 
 MIDDLEWARE = [

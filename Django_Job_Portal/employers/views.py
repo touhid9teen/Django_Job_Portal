@@ -1,50 +1,57 @@
-from django.core.serializers import serialize
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import EmployerProfile
 from .serializers import EmployerProfileSerializer
-
+from accounts.authenticate import CustomAuthentication
 
 class EmployerListView(APIView):
-    def post(self, request):
-        serialize = EmployerProfileSerializer(data=request.data)
-        if serialize.is_valid():
-            serialize.save()
-            return Response(serialize.data, status=status.HTTP_201_CREATED)
-        return Response(serialize.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    authentication_classes = [CustomAuthentication]
     def put(self, request):
-        user_profile = EmployerProfile.objects.get(user=request.user)
-        serializer = EmployerProfileSerializer(user_profile, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        """
+        Update an existing Employer Profile (partial update).
+        """
+        try:
+            user_profile = EmployerProfile.objects.get(user=request.user)
+            serializer = EmployerProfileSerializer(user_profile, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except EmployerProfile.DoesNotExist:
+            return Response({"error": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"Failed to update employer profile: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request):
+        """
+        Get a specific Employer Profile by user ID or the current user's profile.
+        """
         user_id = request.GET.get('user_id')
+        try:
+            if user_id:
+                profile = EmployerProfile.objects.get(id=user_id)
+            else:
+                profile = EmployerProfile.objects.get(user=request.user)
+            serializer = EmployerProfileSerializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except EmployerProfile.DoesNotExist:
+            return Response({"error": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        if user_id:
-            try:
-                candidates = EmployerProfile.objects.get(id=user_id)
-                serializer = EmployerProfileSerializer(candidates)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            except EmployerProfile.DoesNotExist:
-                return Response(status=status.HTTP_404_NOT_FOUND)
-        else:
-            try:
-                candidates = EmployerProfile.objects.get(user=request.user)
-                serializer = EmployerProfileSerializer(candidates)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            except EmployerProfile.DoesNotExist:
-                return Response(status=status.HTTP_404_NOT_FOUND)
 
 class EmployerDetailView(APIView):
+    authentication_classes = [CustomAuthentication]
     def get(self, request):
+        """
+        Retrieve all Employer Profiles.
+        """
         try:
-            candidates = EmployerProfile.objects.all()
-            serializer = EmployerProfileSerializer(candidates, many=True)
-            return Response(serializer.data)
+            profiles = EmployerProfile.objects.all()
+            serializer = EmployerProfileSerializer(profiles, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except EmployerProfile.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "No employer profiles found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

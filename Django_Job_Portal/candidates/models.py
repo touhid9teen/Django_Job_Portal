@@ -8,7 +8,6 @@ class CandidateProfile(models.Model):
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
-    contact_number = models.CharField(max_length=15, blank=True, null=True)
     resume = models.FileField(upload_to='documents/resumes/', blank=True, null=True)
     profile_pic = models.ImageField(upload_to='documents/profile_pictures/', blank=True, null=True)
 
@@ -17,6 +16,3 @@ class CandidateProfile(models.Model):
     experience = models.TextField(blank=True, null=True)
     skills = ArrayField(models.CharField(max_length=50), blank=True, null=True)  # Skills as an array
     social_links = ArrayField(models.URLField(), blank=True, null=True)
-
-
-# TODO: singles django
