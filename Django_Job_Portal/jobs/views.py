@@ -1,12 +1,16 @@
+from rest_framework.decorators import permission_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Job
 from .serializers import JobSerializer
 from accounts.authenticate import CustomAuthentication
+from accounts.permissions import IsEmployer
+
 
 class JobListView(APIView):
     authentication_classes = [CustomAuthentication]
+    permission_classes = [IsEmployer]
     def get(self, request):
         """
         Retrieve all jobs.
@@ -24,6 +28,7 @@ class JobListView(APIView):
         """
         Create a new job entry.
         """
+
         serializer = JobSerializer(data=request.data)
         if serializer.is_valid():
             try:
