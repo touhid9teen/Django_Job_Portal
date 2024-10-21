@@ -39,7 +39,9 @@ INSTALLED_APPS = [
     'accounts',
     'candidates',
     'employers',
-    'jobs'
+    'jobs',
+    'applications',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -104,6 +106,9 @@ DATABASES = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'accounts.authenticate.CustomAuthentication',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
     ],
 }
 

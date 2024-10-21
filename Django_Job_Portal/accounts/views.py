@@ -110,3 +110,9 @@ class UserInfoView(APIView):
             return Response({'Total User': total_user, 'Users': serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': f"Failed to retrieve users: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class LogoutView(APIView):
+    authentication_classes = [CustomAuthentication]
+    def post(self, request):
+        token = request.data.get('token')

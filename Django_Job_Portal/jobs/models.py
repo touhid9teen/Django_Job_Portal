@@ -33,3 +33,4 @@ class Job(models.Model):
     deadline = models.DateTimeField(blank=True, null=True)
     application_link = models.URLField(blank=True, null=True)
     application_email = models.EmailField(blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)

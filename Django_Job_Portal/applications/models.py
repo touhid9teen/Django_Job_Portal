@@ -1,35 +1,22 @@
 from django.db import models
-from django.utils import timezone
 
-class Application(models.Model):
-    # Foreign key to the Job model (Assumes you have a Job model)
-    job = models.ForeignKey('Job', on_delete=models.CASCADE, related_name='applications')
+from accounts.models import Users
+from jobs.models import Job
+from candidates.models import CandidateProfile
 
-    # Applicant Information
-    applicant_name = models.CharField(max_length=255)
-    applicant_email = models.EmailField()
-    cover_letter = models.TextField(blank=True, null=True)
+class JobApplication(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
+    candidate = models.ForeignKey(CandidateProfile, on_delete=models.CASCADE, related_name='applications')
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='applications')
+    application_date = models.DateTimeField(auto_now_add=True)
+    email = models.EmailField(max_length=254)
 
-    # Resume and Attachments
-    resume = models.FileField(upload_to='documents/resumes/')
-    portfolio_link = models.URLField(blank=True, null=True)
-
-    # Status of Application
-    APPLICATION_STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Reviewed', 'Reviewed'),
-        ('Accepted', 'Accepted'),
-        ('Rejected', 'Rejected'),
+    STATUS_CHOICES = [
+        ('applied', 'Applied'),
+        ('interviewed', 'Interviewed'),
+        ('offered', 'Offered'),
+        ('rejected', 'Rejected'),
     ]
-    status = models.CharField(max_length=50, choices=APPLICATION_STATUS_CHOICES, default='Pending')
-
-    # Date of Application
-    applied_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.applicant_name} - {self.job.title}"
-
-    # Method to check if the application is still active (you can define what "active" means in your case)
-    def is_active(self):
-        return self.status == 'Pending'
-
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
+    cover_letter = models.TextField(blank=True, null=True)
+    resume = models.FileField(upload_to='documents/job_applications/', blank=True, null=True)

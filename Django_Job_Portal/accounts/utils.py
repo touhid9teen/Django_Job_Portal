@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def generate_otp():
-    otp_length  = int(os.getenv('OTP_LENGTH'))
+    otp_length  = int(os.getenv('OTP_LENGTH',6))
     return ''.join(random.choice(string.digits) for _ in range(otp_length))
 
 

@@ -8,11 +8,10 @@ from accounts.authenticate import CustomAuthentication
 class EmployerListView(APIView):
     authentication_classes = [CustomAuthentication]
     def put(self, request):
-        """
-        Update an existing Employer Profile (partial update).
-        """
+        print("int the put")
         try:
             user_profile = EmployerProfile.objects.get(user=request.user)
+            print("user profile" ,user_profile)
             serializer = EmployerProfileSerializer(user_profile, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -24,14 +23,13 @@ class EmployerListView(APIView):
             return Response({"error": f"Failed to update employer profile: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request):
-        """
-        Get a specific Employer Profile by user ID or the current user's profile.
-        """
+
         user_id = request.GET.get('user_id')
         try:
-            if user_id:
+            if user_id is not None:
                 profile = EmployerProfile.objects.get(id=user_id)
             else:
+                print("user", request.user.id)
                 profile = EmployerProfile.objects.get(user=request.user)
             serializer = EmployerProfileSerializer(profile)
             return Response(serializer.data, status=status.HTTP_200_OK)
