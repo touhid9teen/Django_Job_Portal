@@ -6,3 +6,6 @@ urlpatterns = [
     path('candidates/', CandidateListView.as_view(), name='candidate-list'),
     path('candidates-info/', CandidateDetailView.as_view(), name='candidate-detail'),
 ]
+
+# todo: candidate koto gula job apply korche setar jonno ekta api lagbe , pagination must
+# todo: jeto gula api list pagination apply

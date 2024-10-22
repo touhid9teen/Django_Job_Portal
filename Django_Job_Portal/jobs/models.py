@@ -1,7 +1,7 @@
 from django.db import models
 
 class Job(models.Model):
-
+    # todo: HOw is created job field needed
     title = models.CharField(max_length=255)
     description = models.TextField()
     TYPE_CHOICES = [
@@ -28,7 +28,7 @@ class Job(models.Model):
     experience_level = models.CharField(max_length=50, choices=EXPERIENCE_LEVEL_CHOICES)
     company_name = models.CharField(max_length=255)
     location = models.CharField(max_length=255, blank=True, null=True)
-    salary_range = models.CharField(max_length=30)
+    salary_range = models.CharField(max_length=50)
     posted_at = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(blank=True, null=True)
     application_link = models.URLField(blank=True, null=True)

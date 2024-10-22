@@ -16,3 +16,7 @@ class CandidateProfile(models.Model):
     experience = models.TextField(blank=True, null=True)
     skills = ArrayField(models.CharField(max_length=50), blank=True, null=True)  # Skills as an array
     social_links = ArrayField(models.URLField(), blank=True, null=True)
+
+
+# todo: candidate skill set models
+

@@ -4,6 +4,7 @@ from .models import Users
 from candidates.models import CandidateProfile
 from employers.models import EmployerProfile
 
+# todo: otp verified then signals apply
 
 @receiver(post_save, sender=Users)
 def create_user_profile(sender, instance, created, **kwargs):

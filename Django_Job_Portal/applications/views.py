@@ -13,6 +13,7 @@ class JobApplicationView(APIView):
     authentication_classes = [CustomAuthentication]
     permission_classes = [IsCandidate]
     def post(self, request):
+        # Todo: update this query job id
         is_applied = JobApplication.objects.filter(user=request.user.id).exists()
         if is_applied:
             return Response({'status': 'Already Applied'}, status=status.HTTP_200_OK)
