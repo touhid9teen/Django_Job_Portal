@@ -1,7 +1,11 @@
 from django.db import models
 
+from employers.models import EmployerProfile
+
+
 class Job(models.Model):
-    # todo: HOw is created job field needed
+    # todo: HOw is created job field needed --------------------------
+    employer = models.ForeignKey(EmployerProfile, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     description = models.TextField()
     TYPE_CHOICES = [

@@ -34,8 +34,9 @@ class JobListView(APIView):
 
     def delete(self, request):
         try:
-            # todo: update this query and only job created_user only delete this job
-            job = Job.objects.get(id=request.GET.get('job_id'))
+            # todo: update this query and only job created_user only delete this job------------------------------
+            print("user", request.user.id)
+            job = Job.objects.get(id=request.GET.get('job_id'), employer=request.user.id)
             if job.is_deleted == True:
                 return Response({"error": "Job is already deleted."}, status=status.HTTP_400_BAD_REQUEST)
             job.is_deleted = True

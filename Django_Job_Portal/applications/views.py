@@ -12,9 +12,9 @@ from .serializers import JobApplicationSerializer
 class JobApplicationView(APIView):
     authentication_classes = [CustomAuthentication]
     permission_classes = [IsCandidate]
-    def post(self, request):
+    def post(self, request, job_id):
         # Todo: update this query job id
-        is_applied = JobApplication.objects.filter(user=request.user.id).exists()
+        is_applied = JobApplication.objects.filter(user=request.user.id, job=job_id).exists()
         if is_applied:
             return Response({'status': 'Already Applied'}, status=status.HTTP_200_OK)
         serializer = JobApplicationSerializer(data=request.data)

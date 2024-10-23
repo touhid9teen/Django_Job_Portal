@@ -6,7 +6,7 @@ from .models import Users
 
 fake = Faker()
 
-class UserFactory(DjangoModelFactory):
+class  UserFactory(DjangoModelFactory):
     class Meta:
         model = Users
 

@@ -4,7 +4,7 @@ from django.db import transaction
 from applications.models import JobApplication  # Adjust the import based on your app structure
 from applications.factories import JobApplicationFactory  # Adjust the import based on your app structure
 
-NUM_APPLICATIONS = 1500  # Number of applications to create
+NUM_APPLICATIONS = 200  # Number of applications to create
 
 class Command(BaseCommand):
     help = "Generates dummy job application entries"

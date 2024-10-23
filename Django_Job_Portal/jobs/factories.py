@@ -1,6 +1,8 @@
+from random import randint
 import factory
 from factory.django import DjangoModelFactory
 from faker import Faker
+from employers.factories import EmployerProfileFactory
 from .models import Job
 from django.utils import timezone
 from datetime import timedelta
@@ -11,6 +13,7 @@ class JobFactory(DjangoModelFactory):
     class Meta:
         model = Job
 
+    employer = factory.SubFactory(EmployerProfileFactory)
     title = factory.Faker('job')
     description = factory.Faker('paragraph')
     job_type = factory.Iterator(['Government', 'Private'])
@@ -22,5 +25,5 @@ class JobFactory(DjangoModelFactory):
     posted_at = factory.LazyFunction(timezone.now)
     deadline = factory.LazyAttribute(lambda _: fake.date_time_between(start_date=timezone.now(), end_date=timezone.now() + timedelta(days=30)))
     application_link = factory.Faker('url')
-    application_email = factory.Faker('email')
+    application_email = factory.LazyAttribute(lambda _: fake.unique.email())
     is_deleted = factory.Faker('boolean')

@@ -6,6 +6,7 @@ from accounts.serializers import UserSerializer
 from .utils import generate_otp, send_welcome_email, token_generation
 from .authenticate import CustomAuthentication
 from django.contrib.auth import authenticate
+from .signals import otp_verified
 
 
 class RegisterView(APIView):
@@ -63,6 +64,8 @@ class ValidedOtpView(APIView):
             user.is_verified = True
             user.otp = None
             user.save()
+
+            otp_verified.send(sender=user.__class__, instance=user)
 
             return Response({'status': 'Registration successful'}, status=status.HTTP_200_OK)
         except Exception as e:

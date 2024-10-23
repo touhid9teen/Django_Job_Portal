@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from accounts.factories import UserFactory
 from accounts.models import Users
 
-NUM_USERS = 5000
+NUM_USERS = 0
 
 class Command(BaseCommand):
     help = "Generates dummy user data"
