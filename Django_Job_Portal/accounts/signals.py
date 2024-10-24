@@ -3,7 +3,7 @@ from .models import Users
 from candidates.models import CandidateProfile
 from employers.models import EmployerProfile
 
-# todo: otp verified then signals apply
+
 otp_verified = Signal()
 
 @receiver(otp_verified)

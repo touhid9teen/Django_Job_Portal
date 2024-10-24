@@ -6,15 +6,17 @@ from rest_framework import status
 from accounts.authenticate import CustomAuthentication
 from accounts.permissions import IsCandidate, IsEmployer
 from .models import JobApplication
-from .serializers import JobApplicationSerializer
+from .serializers import (
+    JobApplicationSerializer,
+    JobApplicationCandidateDetailsSerializer
+)
 
 
 class JobApplicationView(APIView):
     authentication_classes = [CustomAuthentication]
     permission_classes = [IsCandidate]
     def post(self, request, job_id):
-        # Todo: update this query job id
-        is_applied = JobApplication.objects.filter(user=request.user.id, job=job_id).exists()
+        is_applied = JobApplication.objects.filter(candidate__user__id=request.user.id, job=job_id).exists()
         if is_applied:
             return Response({'status': 'Already Applied'}, status=status.HTTP_200_OK)
         serializer = JobApplicationSerializer(data=request.data)
@@ -33,10 +35,12 @@ class JobApplicationListView(APIView):
         try:
             if job_id and user_id:
                 jobApplications = JobApplication.objects.filter(job=job_id, candidate=user_id)
+                total_job = jobApplications.count()
             else:
                 jobApplications = JobApplication.objects.filter(job=job_id)
-            serializer = JobApplicationSerializer(jobApplications, many=True)
-            return Response(serializer.data)
+                total_job = jobApplications.count()
+            serializer = JobApplicationCandidateDetailsSerializer(jobApplications, many=True)
+            return Response({'Tolal Applied': total_job, "Applied Job": serializer.data}, status=status.HTTP_200_OK)
         except JobApplication.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

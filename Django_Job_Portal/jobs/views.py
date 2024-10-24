@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from rest_framework.decorators import permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,15 +11,22 @@ from accounts.permissions import IsEmployer
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import JobFilter
 
+# get and post data -> get, post
+# get, put, patch, delete -> endpoint
 
+# TODO: UPDATE THIS END POINT DIVIDED INTO 2 API
 class JobListView(APIView):
     authentication_classes = [CustomAuthentication]
     def get(self, request):
         try:
             total_jobs = Job.objects.filter(is_deleted=False).count()
             jobs = Job.objects.filter(is_deleted=False)
-            serializer = JobSerializer(jobs, many=True)
-            return Response({"Total Job" : total_jobs,"jobs":serializer.data}, status=status.HTTP_200_OK)
+            pageinator = PageNumberPagination()
+            pageinator.page_size = 10
+            pageinatorquery =  pageinator.paginate_queryset(jobs, request)
+            serializer = JobSerializer(pageinatorquery, many=True)
+            return pageinator.get_paginated_response(serializer.data)
+            # return Response({"Total Job" : total_jobs,"jobs":serializer.data}, status=status.HTTP_200_OK)
         except Job.DoesNotExist:
             return Response({"error": "No jobs found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -32,11 +40,11 @@ class JobListView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request):
+    def delete(self, request, id):
         try:
             # todo: update this query and only job created_user only delete this job------------------------------
             print("user", request.user.id)
-            job = Job.objects.get(id=request.GET.get('job_id'), employer=request.user.id)
+            job = Job.objects.get(id=id, employer=request.user.id)
             if job.is_deleted == True:
                 return Response({"error": "Job is already deleted."}, status=status.HTTP_400_BAD_REQUEST)
             job.is_deleted = True

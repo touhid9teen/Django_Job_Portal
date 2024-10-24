@@ -3,7 +3,7 @@ from accounts.models import Users  # Import the User model
 
 
 class EmployerProfile(models.Model):
-    user = models.OneToOneField(Users, on_delete=models.CASCADE)  # Link to User model
+    user = models.OneToOneField(Users, on_delete=models.CASCADE, related_name='employer')
     first_name = models.CharField(max_length=255, blank=True, null=True)
     last_name = models.CharField(max_length=255, blank=True, null=True)
     address = models.TextField(blank=True, null=True)

@@ -1,8 +1,10 @@
+from django.core.serializers import serialize
+from rest_framework.pagination import PageNumberPagination
 from .models import Users
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from accounts.serializers import UserSerializer
+from accounts.serializers import UserSerializer, ChangePasswordSerializer, CandidateDetailsProfileSerializer, EmployerDetailsProfileSerializer
 from .utils import generate_otp, send_welcome_email, token_generation
 from .authenticate import CustomAuthentication
 from django.contrib.auth import authenticate
@@ -108,14 +110,40 @@ class UserInfoView(APIView):
         try:
             total_user = Users.objects.count()
             users = Users.objects.all()
-            serializer = UserSerializer(users, many=True)
-
-            return Response({'Total User': total_user, 'Users': serializer.data}, status=status.HTTP_200_OK)
+            pageinator = PageNumberPagination()
+            pageinator.page_size = 10
+            pageinatorquery = pageinator.paginate_queryset(users, request)
+            serializer = UserSerializer(pageinatorquery, many=True)
+            return pageinator.get_paginated_response(serializer.data)
+            # return pageinator.get_paginated_response({'Total User': total_user, 'Users':serializer.data})
+            # return Response({'Total User': total_user, 'Users': serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': f"Failed to retrieve users: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class ChangePasswordView(APIView):
+    authentication_classes = [CustomAuthentication]
+    def patch(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            user = request.user
+            serializer.update(user, serializer.validated_data)
+            return Response({'detail':'Password Change Successfull'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class LoginUserProfileView(APIView):
+    authentication_classes = [CustomAuthentication]
+    def get(self, request):
+        try:
+            user = Users.objects.get(id=request.user.id)
+            if request.user.user_type == 'candidate':
+                serializer = CandidateDetailsProfileSerializer(user)
+            elif request.user.user_type == 'employer':
+                serializer = EmployerDetailsProfileSerializer(user)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 class LogoutView(APIView):
     authentication_classes = [CustomAuthentication]
     def post(self, request):
-        token = request.data.get('token')
+        pass

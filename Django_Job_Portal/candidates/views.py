@@ -1,14 +1,16 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from applications.models import JobApplication
 from .models import CandidateProfile
-from .serializers import CandidateSerializer
+from .serializers import CandidateSerializer, CandidateSkillsSerializer
 from django.shortcuts import get_object_or_404
 
 
 class CandidateListView(APIView):
     def post(self, request):
-        serializer = CandidateSerializer(data=request.data)
+        serializer = CandidateSkillsSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -42,3 +44,8 @@ class CandidateDetailView(APIView):
         candidates = CandidateProfile.objects.all()
         serializer = CandidateSerializer(candidates, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class CandidateJobApplicantListView(APIView):
+    def get(self, request):
+        total_application = JobApplication.objects.filter(candidate__user__id=request.user.id)
+        return Response({"Total Application": total_application}, status=status.HTTP_200_OK)
