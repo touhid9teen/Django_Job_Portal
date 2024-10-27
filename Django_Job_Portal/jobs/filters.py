@@ -10,4 +10,4 @@ class JobFilter(filters.FilterSet):
 
     class Meta:
         model = Job
-        fields = ['title', 'job_type', 'job_subtype', 'experience_level', 'location']
+        fields = ['id', 'title', 'job_type', 'job_subtype', 'experience_level', 'location']

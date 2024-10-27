@@ -45,7 +45,9 @@ class CandidateDetailView(APIView):
         serializer = CandidateSerializer(candidates, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class CandidateJobApplicantListView(APIView):
     def get(self, request):
         total_application = JobApplication.objects.filter(candidate__user__id=request.user.id)
-        return Response({"Total Application": total_application}, status=status.HTTP_200_OK)
+        # todo: list er jonno serializer needed
+        return Response({"Total_Application": total_application}, status=status.HTTP_200_OK)

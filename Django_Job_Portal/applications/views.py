@@ -5,6 +5,7 @@ from rest_framework import status
 
 from accounts.authenticate import CustomAuthentication
 from accounts.permissions import IsCandidate, IsEmployer
+from jobs.models import Job
 from .models import JobApplication
 from .serializers import (
     JobApplicationSerializer,
@@ -12,7 +13,7 @@ from .serializers import (
 )
 
 
-class JobApplicationView(APIView):
+class CreateAndListApiview(APIView):
     authentication_classes = [CustomAuthentication]
     permission_classes = [IsCandidate]
     def post(self, request, job_id):
@@ -26,7 +27,7 @@ class JobApplicationView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class JobApplicationListView(APIView):
+class UpdateAndDeleteApiView(APIView):
     authentication_classes = [CustomAuthentication]
     permission_classes = [IsEmployer]
     def get(self, request):
@@ -40,8 +41,29 @@ class JobApplicationListView(APIView):
                 jobApplications = JobApplication.objects.filter(job=job_id)
                 total_job = jobApplications.count()
             serializer = JobApplicationCandidateDetailsSerializer(jobApplications, many=True)
-            return Response({'Tolal Applied': total_job, "Applied Job": serializer.data}, status=status.HTTP_200_OK)
+            return Response({'Tolal_Applied': total_job, "Applied_Job": serializer.data}, status=status.HTTP_200_OK)
         except JobApplication.DoesNotExist:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request):
+        job_id = request.GET.get('job_id')
+        user_id = request.GET.get('user_id')
+        try:
+            job = Job.objects.get(id=job_id)
+            job_application = JobApplication.objects.get(job=job_id, candidate=user_id)
+            print('job_application', job_application.id)
+            if job.is_deleted:
+                return Response({"error": "Job is already deleted."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if job.employer.user.id == request.user.id :
+                job_application.status = request.data.get('status')
+                job_application.save()
+                return Response({"error": "Job Application's Status is updated."}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "You are not allowed to update this application."},
+                                status=status.HTTP_400_BAD_REQUEST)
+        except Job.DoesNotExist:
+            return Response({"error": "No application found."}, status=status.HTTP_404_NOT_FOUND)
+
 
 
