@@ -4,7 +4,14 @@ from applications.models import JobApplication
 from employers.serializers import EmployerProfileSerializer
 from .models import Job
 
+class JobCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Job
+        fields = '__all__'
+
+
 class JobSerializer(serializers.ModelSerializer):
+    employer = EmployerProfileSerializer(read_only=True)
     class Meta:
         model = Job
         fields = '__all__'

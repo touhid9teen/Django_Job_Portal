@@ -108,15 +108,12 @@ class UserInfoView(APIView):
 
     def get(self, request):
         try:
-            total_user = Users.objects.count()
             users = Users.objects.all()
             pageinator = PageNumberPagination()
             pageinator.page_size = 10
             pageinatorquery = pageinator.paginate_queryset(users, request)
             serializer = UserSerializer(pageinatorquery, many=True)
             return pageinator.get_paginated_response(serializer.data)
-            # return pageinator.get_paginated_response({'Total User': total_user, 'Users':serializer.data})
-            # return Response({'Total User': total_user, 'Users': serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': f"Failed to retrieve users: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

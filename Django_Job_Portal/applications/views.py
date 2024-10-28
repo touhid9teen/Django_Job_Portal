@@ -1,4 +1,3 @@
-from rest_framework.decorators import authentication_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -27,35 +26,22 @@ class CreateAndListApiview(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UpdateAndDeleteApiView(APIView):
+
+class JobApplicationStatusUpdateAPIView(APIView):
     authentication_classes = [CustomAuthentication]
     permission_classes = [IsEmployer]
-    def get(self, request):
-        job_id = request.GET.get('job_id')
-        user_id = request.GET.get('user_id')
+    def get(self, request, application_id):
         try:
-            if job_id and user_id:
-                jobApplications = JobApplication.objects.filter(job=job_id, candidate=user_id)
-                total_job = jobApplications.count()
-            else:
-                jobApplications = JobApplication.objects.filter(job=job_id)
-                total_job = jobApplications.count()
-            serializer = JobApplicationCandidateDetailsSerializer(jobApplications, many=True)
-            return Response({'Tolal_Applied': total_job, "Applied_Job": serializer.data}, status=status.HTTP_200_OK)
+            job_applications = JobApplication.objects.get(id=application_id)
+            serializer = JobApplicationCandidateDetailsSerializer(job_applications)
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
         except JobApplication.DoesNotExist:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "not found"}, status=status.HTTP_400_BAD_REQUEST)
 
-    def patch(self, request):
-        job_id = request.GET.get('job_id')
-        user_id = request.GET.get('user_id')
+    def patch(self, request, application_id):
         try:
-            job = Job.objects.get(id=job_id)
-            job_application = JobApplication.objects.get(job=job_id, candidate=user_id)
-            print('job_application', job_application.id)
-            if job.is_deleted:
-                return Response({"error": "Job is already deleted."}, status=status.HTTP_400_BAD_REQUEST)
-
-            if job.employer.user.id == request.user.id :
+            job_application = JobApplication.objects.get(id=application_id)
+            if job_application.job.employer.user.id == request.user.id :
                 job_application.status = request.data.get('status')
                 job_application.save()
                 return Response({"error": "Job Application's Status is updated."}, status=status.HTTP_200_OK)

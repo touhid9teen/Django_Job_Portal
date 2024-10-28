@@ -5,7 +5,7 @@ from django.db import transaction
 from accounts.factories import UserFactory
 from candidates.factories import CandidateProfileFactory
 
-NUM_PROFILES = 100
+NUM_PROFILES = 0
 
 class Command(BaseCommand):
     help = "Generates dummy candidate profiles"

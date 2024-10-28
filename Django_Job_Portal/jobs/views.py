@@ -5,7 +5,7 @@ from rest_framework import status, viewsets
 
 from employers.models import EmployerProfile
 from .models import Job
-from .serializers import JobSerializer, JobDetailSerializer
+from .serializers import JobSerializer, JobDetailSerializer, JobCreateSerializer
 from accounts.authenticate import CustomAuthentication
 from accounts.permissions import IsEmployer
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,7 +17,7 @@ class CreateAndListApiview(APIView):
     permission_classes = [IsEmployer]
 
     def post(self, request):
-        serializer = JobSerializer(data=request.data)
+        serializer = JobCreateSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 serializer.save()
@@ -30,7 +30,6 @@ class CreateAndListApiview(APIView):
 
     def get(self, request):
         try:
-            print(request.user)
             jobs = Job.objects.filter(is_deleted=False, employer__user__id=request.user.id)
             serializer = JobSerializer(jobs, many=True)
             total_jobs = jobs.count()
@@ -43,7 +42,7 @@ class CreateAndListApiview(APIView):
 
 
 class UpdateAndDeleteApiView(APIView):
-
+    authentication_classes = [CustomAuthentication]
     def get(self, request, job_id):
         try:
             job = Job.objects.get(id=job_id)
@@ -101,7 +100,3 @@ class JobFilterView(APIView):
                 "Jobs   ":serializer.data}, status=status.HTTP_200_OK)
         except Job.DoesNotExist:
             return Response({"error": "No jobs found."}, status=status.HTTP_404_NOT_FOUND)
-
-# class JobListView(APIView):
-#     authentication_classes = [CustomAuthentication]
-#
