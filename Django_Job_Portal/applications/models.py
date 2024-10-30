@@ -20,7 +20,7 @@ class JobApplication(models.Model):
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
     cover_letter = models.TextField(blank=True, null=True)
-    resume = models.FileField(upload_to='documents/job_applications/', blank=True, null=True)
+    resume = models.FileField(upload_to='documents/resumes/', blank=True, null=True)
     accepted_salary = models.FloatField(blank=True, null=True)
     notice_period = models.CharField(blank=True, null=True)
 

@@ -1,17 +1,18 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from accounts.permissions import IsEmployer
 from .models import EmployerProfile
 from .serializers import EmployerProfileSerializer
 from accounts.authenticate import CustomAuthentication
 
 class EmployerListView(APIView):
     authentication_classes = [CustomAuthentication]
+    permission_classes = [IsEmployer]
     def put(self, request):
-        print("int the put")
         try:
             user_profile = EmployerProfile.objects.get(user=request.user)
-            print("user profile" ,user_profile)
             serializer = EmployerProfileSerializer(user_profile, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -24,6 +25,7 @@ class EmployerListView(APIView):
 
     def get(self, request):
         try:
+            print('profile', request.user)
             profile = EmployerProfile.objects.get(user=request.user)
             serializer = EmployerProfileSerializer(profile)
             return Response(serializer.data, status=status.HTTP_200_OK)

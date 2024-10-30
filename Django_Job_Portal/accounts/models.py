@@ -4,6 +4,8 @@ from django.db import models
 
 
 class UserManager(BaseUserManager):
+
+
     def create_user(self, email, password, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')
@@ -44,6 +46,10 @@ class Users(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['contract_number', 'user_type']
+
+
+    def save(self, *args, **kwargs):
+        super(Users, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.email

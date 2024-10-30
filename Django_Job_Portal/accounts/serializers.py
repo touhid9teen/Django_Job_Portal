@@ -1,29 +1,79 @@
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import validate_email
 
+from candidates.models import CandidateProfile
 from candidates.serializers import CandidateSerializer
+from employers.models import EmployerProfile
 from employers.serializers import EmployerProfileSerializer
 from .models import Users
 from rest_framework import serializers
 
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     class Meta:
         model = Users
         fields = ['id', 'email', 'contract_number', 'user_type', 'password']
+        extra_kwargs = {
+            'email': {'write_only': True, 'required': True},
+            'contract_number': {'write_only': True, 'required': True}
+        }
+
+    def validate_email(self, email):
+        if Users.objects.filter(email=email).exists():
+            raise serializers.ValidationError('Email already registered')
+        validate_email(email)
+        return email
+
+    def validate_contract_number(self, contract_number):
+        if Users.objects.filter(contract_number=contract_number).exists():
+            raise serializers.ValidationError('Contract number already registered')
+
+        contact = contract_number.strip()
+        if contract_number.startswith('+'):
+            if not contact[1:].isdigit():
+                raise serializers.ValidationError('Contract number must contain digits')
+            if len(contact) != 14:
+                raise serializers.ValidationError('Contract number must 14 digits')
+        else:
+            if not contract_number.isdigit():
+                raise serializers.ValidationError('Contract number must contain digits')
+            if not len(contact) != 11:
+                raise serializers.ValidationError('Contract number length be 11 digits')
+        return contract_number
+
 
 
 class CandidateDetailsProfileSerializer(serializers.ModelSerializer):
     candidate = CandidateSerializer(read_only=True)
     class Meta:
         model = Users
-        fields = '__all__'
-        # fields = ['candidate_profile', 'id', 'email', 'contract_number', 'user_type', 'password']
+        fields = ['id', 'email', 'contract_number', 'user_type', 'candidate']
 
 class EmployerDetailsProfileSerializer(serializers.ModelSerializer):
     employer = EmployerProfileSerializer(read_only=True)
     class Meta:
         model = Users
-        fields = '__all__'
+        fields = ['id', 'email', 'contract_number', 'user_type', 'employer']
+
+class UserDetailsProfileSerializer(serializers.ModelSerializer):
+    user_details = serializers.SerializerMethodField()
+    class Meta:
+        model = Users
+        fields = ['id', 'email', 'contract_number', 'user_type', 'user_details']
+
+    def get_user_details(self, obj):
+        if obj.user_type == 'candidate':
+            candidateProfile = CandidateProfile.objects.filter(user=obj).first()
+            if candidateProfile:
+                return CandidateDetailsProfileSerializer(candidateProfile).data
+
+        elif obj.user_type == 'employer':
+            employerProfile = EmployerProfile.objects.filter(user=obj).first()
+            if employerProfile:
+                return EmployerDetailsProfileSerializer(employerProfile).data
+
+        return None
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
