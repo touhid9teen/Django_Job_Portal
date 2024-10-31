@@ -34,7 +34,7 @@ class RegisterView(APIView):
 
                 user.save()
 
-                send_welcome_email(otp, user.email)
+                send_welcome_email.delay(otp, user.email)
                 return Response({'status': 'OTP has been generated', 'otp': otp}, status=status.HTTP_201_CREATED)
             except Exception as e:
                 return Response({'error': f"User registration failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

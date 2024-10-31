@@ -26,22 +26,28 @@ class UserSerializer(serializers.ModelSerializer):
         return email
 
     def validate_contract_number(self, contract_number):
-        if Users.objects.filter(contract_number=contract_number).exists():
-            raise serializers.ValidationError('Contract number already registered')
+        contract_number = contract_number.strip()
 
-        contact = contract_number.strip()
         if contract_number.startswith('+'):
-            if not contact[1:].isdigit():
-                raise serializers.ValidationError('Contract number must contain digits')
-            if len(contact) != 14:
-                raise serializers.ValidationError('Contract number must 14 digits')
-        else:
-            if not contract_number.isdigit():
-                raise serializers.ValidationError('Contract number must contain digits')
-            if not len(contact) != 11:
-                raise serializers.ValidationError('Contract number length be 11 digits')
-        return contract_number
+            country_code_length = 3
+            digits_part = contract_number[1:]
+            local_number_part = contract_number[country_code_length:]
 
+            if not digits_part.isdigit() or len(digits_part) != 13:
+                raise serializers.ValidationError(
+                    'Contract number must contain 13 digits when using a country code (e.g., +88XXXXXXXXXXX).'
+                )
+        else:
+            local_number_part = contract_number
+            if not contract_number.isdigit() or len(contract_number) != 11:
+                raise serializers.ValidationError(
+                    'Contract number must be 11 digits for a local number.'
+                )
+
+        if Users.objects.filter(contract_number__in=[contract_number, local_number_part]).exists():
+            raise serializers.ValidationError('Contract number is already registered.')
+
+        return contract_number
 
 
 class CandidateDetailsProfileSerializer(serializers.ModelSerializer):

@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-
+from django.core.cache import cache
 from accounts.authenticate import CustomAuthentication
 from accounts.permissions import IsCandidate, IsEmployer
 from jobs.models import Job
@@ -11,11 +11,13 @@ from .serializers import (
     JobApplicationCandidateDetailsSerializer
 )
 
-
+# my_cache_key = "upay_cache_key"
 class  CreateAndListApiview(APIView):
     authentication_classes = [CustomAuthentication]
     permission_classes = [IsCandidate]
     def post(self, request, job_id):
+        # my_dinamic_cache_key = my_cache_key+str(job_id)
+
         is_applied = JobApplication.objects.filter(candidate__user__id=request.user.id, job=job_id).exists()
 
         if is_applied:
@@ -31,7 +33,7 @@ class  CreateAndListApiview(APIView):
 
 class AllJobApplicationDetailsView(APIView):
     authentication_classes = [CustomAuthentication]
-    permission_classes = [IsEmployer    ]
+    permission_classes = [IsEmployer]
     def get(self, request, job_id):
         try:
             job_applications = JobApplication.objects.filter(job_id=job_id)
