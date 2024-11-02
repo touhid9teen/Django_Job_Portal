@@ -8,7 +8,7 @@ class Job(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     TYPE_CHOICES = [
-        ('Government', 'Government'),
+            ('Government', 'Government'),
         ('Private', 'Private'),
     ]
     job_type = models.CharField(max_length=50, choices=TYPE_CHOICES)

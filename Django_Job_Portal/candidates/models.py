@@ -7,17 +7,17 @@ class CandidateProfile(models.Model):
     user = models.OneToOneField(Users, on_delete=models.CASCADE, related_name='candidate')
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
+    address = models.TextField(max_length=100, blank=True, null=True)
     profile_pic = models.ImageField(upload_to='documents/profile_pictures/', blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
     social_links = ArrayField(models.URLField(), blank=True, null=True)
-    location = models.CharField(max_length=100, blank=True, null=True)
     gender = models.CharField(max_length=100, blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
 
 
 
 class CandidateSkills(models.Model):
+    candidate = models.OneToOneField(CandidateProfile, on_delete=models.CASCADE, related_name='skills')
     resume = models.FileField(upload_to='documents/resumes/', blank=True, null=True)
     education = ArrayField(models.CharField(max_length=500), blank=True, null=True)
     experience = ArrayField(models.CharField(max_length=500), blank=True, null=True)

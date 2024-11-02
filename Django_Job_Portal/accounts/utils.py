@@ -1,3 +1,4 @@
+from celery import shared_task
 from django.core.mail import send_mail
 from django.conf import settings
 import string
@@ -14,7 +15,7 @@ def generate_otp():
     otp_length  = int(os.getenv('OTP_LENGTH',6))
     return ''.join(random.choice(string.digits) for _ in range(otp_length))
 
-
+@shared_task
 def send_welcome_email(otp, email):
     try:
         subject = 'Your Account Verification email :'

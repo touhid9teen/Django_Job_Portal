@@ -4,7 +4,7 @@ from .models import Users
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from accounts.serializers import UserSerializer, ChangePasswordSerializer, CandidateDetailsProfileSerializer, EmployerDetailsProfileSerializer
+from accounts.serializers import UserSerializer, ChangePasswordSerializer, CandidateDetailsProfileSerializer, EmployerDetailsProfileSerializer, UserDetailsProfileSerializer
 from .utils import generate_otp, send_welcome_email, token_generation
 from .authenticate import CustomAuthentication
 from django.contrib.auth import authenticate
@@ -15,40 +15,33 @@ class RegisterView(APIView):
     authentication_classes = []
 
     def post(self, request):
-        try:
-            email = request.data['email']
-            phone = request.data['contract_number']
 
-            existing_with_email = Users.objects.filter(email=email)
-            users_with_phone = Users.objects.filter(contract_number=phone)
+        email = request.data['email']
+        phone = request.data['contract_number']
 
-            if users_with_phone and existing_with_email:
-                return Response({'error': 'Email and Phone already in use.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            if existing_with_email.exists():
-                return Response({'error': 'Email already in use.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            if users_with_phone.exists():
-                return Response({'error': 'Phone number already in use.'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # todo: validation everything convert serializer validation and phone number validation
+            # todo: 8 length password validation
 
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 validated_data = serializer.validated_data
                 user = Users.objects.create_user(**validated_data)
+
+                # todo: save override kaj koro
                 otp = generate_otp()
                 user.otp = otp
+
                 user.save()
-                send_welcome_email(otp, user.email)
+
+                send_welcome_email.delay(otp, user.email)
                 return Response({'status': 'OTP has been generated', 'otp': otp}, status=status.HTTP_201_CREATED)
             except Exception as e:
                 return Response({'error': f"User registration failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ValidedOtpView(APIView):
+class ValidatedOtpView(APIView):
     authentication_classes = []
 
     def post(self, request):
@@ -108,15 +101,12 @@ class UserInfoView(APIView):
 
     def get(self, request):
         try:
-            total_user = Users.objects.count()
             users = Users.objects.all()
             pageinator = PageNumberPagination()
             pageinator.page_size = 10
             pageinatorquery = pageinator.paginate_queryset(users, request)
-            serializer = UserSerializer(pageinatorquery, many=True)
+            serializer = UserDetailsProfileSerializer(pageinatorquery, many=True)
             return pageinator.get_paginated_response(serializer.data)
-            # return pageinator.get_paginated_response({'Total User': total_user, 'Users':serializer.data})
-            # return Response({'Total User': total_user, 'Users': serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': f"Failed to retrieve users: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -127,7 +117,7 @@ class ChangePasswordView(APIView):
         if serializer.is_valid():
             user = request.user
             serializer.update(user, serializer.validated_data)
-            return Response({'detail':'Password Change Successfull'}, status=status.HTTP_200_OK)
+            return Response({'detail':'Password Change Successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginUserProfileView(APIView):
