@@ -27,9 +27,10 @@ class RegisterView(APIView):
             try:
                 validated_data = serializer.validated_data
                 user = Users.objects.create_user(**validated_data)
-
+                print("validated_data",validated_data, user)
                 # todo: save override kaj koro
                 otp = generate_otp()
+                print("otp",otp)
                 user.otp = otp
 
                 user.save()

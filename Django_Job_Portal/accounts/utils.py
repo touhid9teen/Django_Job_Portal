@@ -9,10 +9,14 @@ from job_portal.settings import SECRET_KEY
 import jwt
 import os
 from dotenv import load_dotenv
+from job_portal.settings import OTP_LENGTH
 load_dotenv()
 
 def generate_otp():
-    otp_length  = int(os.getenv('OTP_LENGTH',6))
+    # TODO: Settings file theke asbe
+    # otp_length = int(OTP_LENGTH)
+    otp_length = 6
+
     return ''.join(random.choice(string.digits) for _ in range(otp_length))
 
 @shared_task

@@ -28,23 +28,17 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_contract_number(self, contract_number):
         contract_number = contract_number.strip()
 
+        # todo: 01.......... saved
         if contract_number.startswith('+'):
             country_code_length = 3
-            digits_part = contract_number[1:]
-            local_number_part = contract_number[country_code_length:]
+            contract_number = contract_number[country_code_length:]
 
-            if not digits_part.isdigit() or len(digits_part) != 13:
-                raise serializers.ValidationError(
-                    'Contract number must contain 13 digits when using a country code (e.g., +88XXXXXXXXXXX).'
-                )
-        else:
-            local_number_part = contract_number
-            if not contract_number.isdigit() or len(contract_number) != 11:
-                raise serializers.ValidationError(
-                    'Contract number must be 11 digits for a local number.'
-                )
+        if not contract_number.isdigit() or len(contract_number) != 11:
+            raise serializers.ValidationError(
+                'Contract number must contain 11 digits (e.g., 01XXXXXXXXX).'
+            )
 
-        if Users.objects.filter(contract_number__in=[contract_number, local_number_part]).exists():
+        if Users.objects.filter(contract_number=contract_number).exists():
             raise serializers.ValidationError('Contract number is already registered.')
 
         return contract_number

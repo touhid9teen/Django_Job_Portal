@@ -16,13 +16,15 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, phone_number, password=None):
+    def create_superuser(self, email, contract_number, user_type='admin', password=None):
         user = self.create_user(
             email=email,
-            phone_number=phone_number,
             password=password,
+            contract_number=contract_number,
+            user_type=user_type,
         )
         user.is_admin = True
+        user.is_superuser = True  # Also ensure the superuser flag is set
         user.save(using=self._db)
         return user
 
