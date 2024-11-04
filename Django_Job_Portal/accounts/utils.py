@@ -1,5 +1,6 @@
 from celery import shared_task
 from django.core.mail import send_mail
+from email.message import EmailMessage
 from django.conf import settings
 import string
 import random
@@ -13,10 +14,7 @@ from job_portal.settings import OTP_LENGTH
 load_dotenv()
 
 def generate_otp():
-    # TODO: Settings file theke asbe
-    # otp_length = int(OTP_LENGTH)
-    otp_length = 6
-
+    otp_length = int(OTP_LENGTH)
     return ''.join(random.choice(string.digits) for _ in range(otp_length))
 
 @shared_task
@@ -33,7 +31,6 @@ def send_welcome_email(otp, email):
 
 def token_generation(user):
     uptime = timezone.now() + timedelta(minutes=30)
-    print("token user", user, user.id, user.contract_number)
     payload = {
         'id': user.id,
         'email': user.email,

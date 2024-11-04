@@ -1,10 +1,10 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from accounts.utils import generate_otp
 
 
 class UserManager(BaseUserManager):
-
 
     def create_user(self, email, password, **extra_fields):
         if not email:
@@ -24,7 +24,7 @@ class UserManager(BaseUserManager):
             user_type=user_type,
         )
         user.is_admin = True
-        user.is_superuser = True  # Also ensure the superuser flag is set
+        user.is_superuser = True
         user.save(using=self._db)
         return user
 
@@ -51,6 +51,8 @@ class Users(AbstractUser):
 
 
     def save(self, *args, **kwargs):
+        otp = generate_otp()
+        self.otp = otp
         super(Users, self).save(*args, **kwargs)
 
     def __str__(self):

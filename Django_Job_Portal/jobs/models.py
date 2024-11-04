@@ -3,6 +3,14 @@ from django.db import models
 from employers.models import EmployerProfile
 
 
+class JobManager(models.Manager):
+
+    def create_job(self, **extra_fields):
+        job = self.model(**extra_fields)
+        job.save()
+        return job
+
+
 class Job(models.Model):
     employer = models.ForeignKey(EmployerProfile, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -37,3 +45,6 @@ class Job(models.Model):
     application_link = models.URLField(blank=True, null=True)
     application_email = models.EmailField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
+
+
+    objects = JobManager()

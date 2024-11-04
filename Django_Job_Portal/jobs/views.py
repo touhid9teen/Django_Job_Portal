@@ -20,8 +20,8 @@ class CreateAndListApiview(APIView):
         serializer = JobCreateSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                serializer.save()
-                print("data", serializer.data)
+                validated_data = serializer.validated_data
+                Job.objects.create_job(**validated_data)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except Exception as e:
                 return Response({"error": f"Failed to create job: {str(e)}"},
@@ -96,7 +96,7 @@ class JobFilterView(APIView):
             # total_jobs = filter_queryset.count()
             serializer = JobDetailSerializer(pageinatorquery, many=True)
             return Response({
-                "Total": total_jobs,
-                "Jobs   ":serializer.data}, status=status.HTTP_200_OK)
+                "total_jobs": total_jobs,
+                "data":serializer.data}, status=status.HTTP_200_OK)
         except Job.DoesNotExist:
             return Response({"error": "No jobs found."}, status=status.HTTP_404_NOT_FOUND)

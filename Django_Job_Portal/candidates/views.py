@@ -73,7 +73,6 @@ class CandidateJobApplicantListView(APIView):
             total_application = JobApplication.objects.filter(candidate_id=candidate_id)
             serializer = JobApplicationSerializer(total_application, many=True)
             total_application = total_application.count()
-            # todo: list er jonno serializer needed
             return Response({"Total_Application": total_application, "data" : serializer.data}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

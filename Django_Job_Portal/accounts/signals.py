@@ -1,5 +1,4 @@
 from django.dispatch import receiver,Signal
-from .models import Users
 from candidates.models import CandidateProfile
 from employers.models import EmployerProfile
 

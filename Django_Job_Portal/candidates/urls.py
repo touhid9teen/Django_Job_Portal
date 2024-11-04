@@ -9,5 +9,3 @@ urlpatterns = [
     path('application/list/', CandidateJobApplicantListView.as_view(), name='candidate-job-application-list'),
 ]
 
-# todo: candidate koto gula job apply korche setar jonno ekta api lagbe , pagination must---------------
-# todo: jeto gula api list pagination apply---------------------------

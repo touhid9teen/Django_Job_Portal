@@ -1,12 +1,14 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from django.core.validators import validate_email
-
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email, EmailValidator
 from candidates.models import CandidateProfile
 from candidates.serializers import CandidateSerializer
 from employers.models import EmployerProfile
 from employers.serializers import EmployerProfileSerializer
 from .models import Users
 from rest_framework import serializers
+from django.utils.translation import gettext_lazy as _
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -28,10 +30,10 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_contract_number(self, contract_number):
         contract_number = contract_number.strip()
 
-        # todo: 01.......... saved
         if contract_number.startswith('+'):
-            country_code_length = 3
-            contract_number = contract_number[country_code_length:]
+            contract_number = contract_number[3:]
+        if len(contract_number) == 13:
+            contract_number = contract_number[2:]
 
         if not contract_number.isdigit() or len(contract_number) != 11:
             raise serializers.ValidationError(
@@ -42,6 +44,44 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Contract number is already registered.')
 
         return contract_number
+
+
+class LoginSerializer(serializers.Serializer):
+    email_or_phone = serializers.CharField(required=True)
+    password = serializers.CharField(write_only=True, required=True)
+
+    def validate_identifier(self, value):
+        email_validator = EmailValidator()
+        try:
+            email_validator(value)
+            self.context['is_email'] = True
+        except ValidationError:
+            if value.isdigit() and len(value) == 11:
+                self.context['is_phone'] = True
+            else:
+                raise serializers.ValidationError(_("Enter a valid email or phone number."))
+
+        return value
+
+    def validate(self, data):
+        email_or_phone = data.get('email_or_phone')
+        password = data.get('password')
+
+        # Determine if identifier is email or phone
+        auth_kwargs = {'username': email_or_phone, 'password': password}
+        if self.context.get('is_phone'):
+            auth_kwargs = {'phone': email_or_phone, 'password': password}
+
+        user = authenticate(**auth_kwargs)
+
+        if user is None:
+            raise serializers.ValidationError(_("Invalid email/phone or password."))
+
+        if not user.is_verified:
+            raise serializers.ValidationError(_("Please verify your account via OTP."))
+
+        data['user'] = user
+        return data
 
 
 class CandidateDetailsProfileSerializer(serializers.ModelSerializer):
@@ -74,6 +114,25 @@ class UserDetailsProfileSerializer(serializers.ModelSerializer):
                 return EmployerDetailsProfileSerializer(employerProfile).data
 
         return None
+
+class OtpVerificationSerializer(serializers.Serializer):
+    otp = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
+
+    def validate_otp(self, otp):
+        if len(otp) != 6 or not otp.isdigit():
+            raise serializers.ValidationError('OTP must be a 6-digit numeric value.')
+
+        if not Users.objects.filter(otp=otp).exists():
+            raise serializers.ValidationError('OTP does not exist.')
+
+        return otp
+
+    def validate_email(self, email):
+        if not Users.objects.filter(email=email).exists():
+            raise serializers.ValidationError('Email does not exist.')
+        return email
+
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
