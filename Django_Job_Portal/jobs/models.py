@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 
 from employers.models import EmployerProfile
 
@@ -9,6 +10,18 @@ class JobManager(models.Manager):
         job = self.model(**extra_fields)
         job.save()
         return job
+
+    def fetch_jobs(self,q, **extra_fields):
+        if q == 'get':
+            return self.get(**extra_fields)
+        return self.filter(**extra_fields)
+
+    # def get_individual_job(self, job_id):
+    #     try:
+    #         return self.get(id=job_id)
+    #     except Job.DoesNotExist:
+    #         return None
+
 
 
 class Job(models.Model):

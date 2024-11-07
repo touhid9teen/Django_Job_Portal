@@ -8,6 +8,7 @@ urlpatterns = [
     path('employer/', include('employers.urls')),
     path('job/', include('jobs.urls')),
     path('application/', include('applications.urls')),
+    path('subscription/', include('subscription.urls')),
 ]
 
 # admin.site.site_header = "Job Portal"

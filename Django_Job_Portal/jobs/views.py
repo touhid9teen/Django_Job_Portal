@@ -2,7 +2,6 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
-
 from employers.models import EmployerProfile
 from .models import Job
 from .serializers import JobSerializer, JobDetailSerializer, JobCreateSerializer
@@ -30,7 +29,10 @@ class CreateAndListApiview(APIView):
 
     def get(self, request):
         try:
-            jobs = Job.objects.filter(is_deleted=False, employer__user__id=request.user.id)
+            # jobs = Job.objects.filter(is_deleted=False, employer__user__id=request.user.id)
+            jobs = Job.objects.fetch_jobs('filter', is_deleted=False, employer__user__id=request.user.id)
+            # jobs = Job.objects.employer_jobs(False, request.user.id)
+            print('jobs', jobs)
             serializer = JobSerializer(jobs, many=True)
             total_jobs = jobs.count()
             return Response({"Total Job" : total_jobs,"jobs":serializer.data}, status=status.HTTP_200_OK)
@@ -45,14 +47,14 @@ class UpdateAndDeleteApiView(APIView):
     authentication_classes = [CustomAuthentication]
     def get(self, request, job_id):
         try:
-            job = Job.objects.get(id=job_id)
+            job = Job.objects.fetch_jobs('get', id=job_id,)
             serializer = JobDetailSerializer(job)
             return Response(serializer.data)
         except Job.DoesNotExist:
             return Response({"error": "No job found."}, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, job_id):
-        job = Job.objects.get(id=job_id)
+        job = Job.objects.fetch_jobs('get', id=job_id)
         serializer = JobSerializer(job, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -61,7 +63,7 @@ class UpdateAndDeleteApiView(APIView):
 
     def delete(self, request, job_id):
         try:
-            job = Job.objects.get(id=job_id, employer__user__id=request.user.id)
+            job = Job.objects.fetch_jobs('get',id=job_id, employer__user__id=request.user.id)
             if job.is_deleted:
                 return Response({"error": "Job is already deleted."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -81,7 +83,7 @@ class JobFilterView(APIView):
     filterset_class = JobFilter
     def get(self, request, *arg, **kwargs):
         try:
-            jobs = Job.objects.filter(is_deleted=False)
+            jobs = Job.objects.fetch_jobs('filter', is_deleted=False)
 
             #Appley filtering
             filter_backends = DjangoFilterBackend()

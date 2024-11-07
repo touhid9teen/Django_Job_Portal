@@ -50,38 +50,38 @@ class LoginSerializer(serializers.Serializer):
     email_or_phone = serializers.CharField(required=True)
     password = serializers.CharField(write_only=True, required=True)
 
-    def validate_identifier(self, value):
-        email_validator = EmailValidator()
-        try:
-            email_validator(value)
-            self.context['is_email'] = True
-        except ValidationError:
-            if value.isdigit() and len(value) == 11:
-                self.context['is_phone'] = True
-            else:
-                raise serializers.ValidationError(_("Enter a valid email or phone number."))
-
-        return value
-
-    def validate(self, data):
-        email_or_phone = data.get('email_or_phone')
-        password = data.get('password')
-
-        # Determine if identifier is email or phone
-        auth_kwargs = {'username': email_or_phone, 'password': password}
-        if self.context.get('is_phone'):
-            auth_kwargs = {'phone': email_or_phone, 'password': password}
-
-        user = authenticate(**auth_kwargs)
-
-        if user is None:
-            raise serializers.ValidationError(_("Invalid email/phone or password."))
-
-        if not user.is_verified:
-            raise serializers.ValidationError(_("Please verify your account via OTP."))
-
-        data['user'] = user
-        return data
+    # def validate_identifier(self, value):
+    #     email_validator = EmailValidator()
+    #     try:
+    #         email_validator(value)
+    #         self.context['is_email'] = True
+    #     except ValidationError:
+    #         if value.isdigit() and len(value) == 11:
+    #             self.context['is_phone'] = True
+    #         else:
+    #             raise serializers.ValidationError(_("Enter a valid email or phone number."))
+    #
+    #     return value
+    #
+    # def validate(self, data):
+    #     email_or_phone = data.get('email_or_phone')
+    #     password = data.get('password')
+    #
+    #     # Determine if identifier is email or phone
+    #     auth_kwargs = {'username': email_or_phone, 'password': password}
+    #     if self.context.get('is_phone'):
+    #         auth_kwargs = {'phone': email_or_phone, 'password': password}
+    #
+    #     user = authenticate(**auth_kwargs)
+    #     print("user", user)
+    #     if user is None:
+    #         raise serializers.ValidationError(_("Invalid email/phone or password."))
+    #
+    #     if not user.is_verified:
+    #         raise serializers.ValidationError(_("Please verify your account via OTP."))
+    #
+    #     data['user'] = user
+    #     return data
 
 
 class CandidateDetailsProfileSerializer(serializers.ModelSerializer):
@@ -158,3 +158,7 @@ class ChangePasswordSerializer(serializers.ModelSerializer):
         instance.set_password(validated_data['password'])
         instance.save()
         return instance
+
+
+class ModelSerializer:
+    pass

@@ -4,8 +4,7 @@ from .models import Users
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from accounts.serializers import UserSerializer, ChangePasswordSerializer, CandidateDetailsProfileSerializer, \
-    EmployerDetailsProfileSerializer, UserDetailsProfileSerializer, OtpVerificationSerializer, LoginSerializer
+from accounts.serializers import UserSerializer, ChangePasswordSerializer, CandidateDetailsProfileSerializer,EmployerDetailsProfileSerializer, UserDetailsProfileSerializer, OtpVerificationSerializer, LoginSerializer
 from .utils import send_welcome_email, token_generation
 from .authenticate import CustomAuthentication
 from django.contrib.auth import authenticate
@@ -56,8 +55,8 @@ class LoginView(APIView):
     authentication_classes = []
 
     def post(self, request):
-        # TODO: SERIALIZER Used and validation'
         serializer = LoginSerializer(data=request.data)
+        print("data", request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:

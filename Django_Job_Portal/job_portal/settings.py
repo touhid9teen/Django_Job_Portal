@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'jobs',
     'applications',
     'django_filters',
+    'subscription'
 ]
 
 MIDDLEWARE = [
