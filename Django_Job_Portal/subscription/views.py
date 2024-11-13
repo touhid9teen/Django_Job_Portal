@@ -38,4 +38,6 @@ class ChosenSubscriptionView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+
 # todo: index db

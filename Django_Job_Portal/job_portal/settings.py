@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'jobs',
     'applications',
     'django_filters',
-    'subscription'
+    'subscription',
+    'django_cron'
 ]
 
 MIDDLEWARE = [
@@ -104,6 +105,10 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+CRON_CLASSES = [
+    'subscription.cron.SubscriptionCronJob',
+]
 
 
 REST_FRAMEWORK = {

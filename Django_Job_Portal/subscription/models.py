@@ -21,7 +21,8 @@ class SubscriptionPlan(models.Model):
     max_job_applications_per_day = models.PositiveIntegerField(default=0)
     priority_support = models.BooleanField(default=False)
     career_coaching = models.BooleanField(default=False)
-    auto_renew = models.BooleanField(default=True)
+    create_at = models.DateTimeField(default=timezone.now)
+    update_at = models.DateTimeField(auto_now=True)
 
     # todo: created_at and updated_at
 
@@ -34,6 +35,8 @@ class UserSubscription(models.Model):
     has_expired = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     trial_start_date = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     # todo: created_at and updated_at
 
