@@ -38,6 +38,5 @@ def token_generation(user):
         'contact_number': user.contract_number,
         'exp': uptime,
     }
-
     encoded_token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
     return encoded_token

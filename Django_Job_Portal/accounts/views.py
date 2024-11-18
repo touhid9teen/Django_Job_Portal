@@ -7,13 +7,13 @@ from rest_framework import status
 from accounts.serializers import UserSerializer, ChangePasswordSerializer, CandidateDetailsProfileSerializer,EmployerDetailsProfileSerializer, UserDetailsProfileSerializer, OtpVerificationSerializer, LoginSerializer
 from .utils import send_welcome_email, token_generation
 from .authenticate import CustomAuthentication
-from django.contrib.auth import authenticate
 from .signals import otp_verified
+
 
 
 class RegisterView(APIView):
     authentication_classes = []
-
+    # celery -A job_portal worker --loglevel=info
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -56,7 +56,6 @@ class LoginView(APIView):
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
-        print("data", request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         try:
