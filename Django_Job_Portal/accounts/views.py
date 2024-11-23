@@ -18,8 +18,7 @@ class RegisterView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                validated_data = serializer.validated_data
-                user = Users.objects.create_user(**validated_data)
+                user = serializer.save()
                 send_welcome_email.delay(user.otp, user.email)
                 return Response({'status': 'OTP has been generated', 'otp': user.otp}, status=status.HTTP_201_CREATED)
             except Exception as e:

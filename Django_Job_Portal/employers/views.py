@@ -7,7 +7,7 @@ from .models import EmployerProfile
 from .serializers import EmployerProfileSerializer
 from accounts.authenticate import CustomAuthentication
 
-class EmployerListView(APIView):
+class EmployerStatusAndUpdateView(APIView):
     authentication_classes = [CustomAuthentication]
     permission_classes = [IsEmployer]
     def put(self, request):
